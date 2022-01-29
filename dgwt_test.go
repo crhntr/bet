@@ -36,18 +36,21 @@ func TestSet(t *testing.T) {
 							t.Fail()
 						}
 					}),
-					bet.It("does not have some other key", func(t *testing.T, set Set) {
-						if !set.Contains("hello") {
-							t.Fail()
-						}
-					}),
-					bet.It("has a length of 1", func(t *testing.T, set Set) {
-						if set.Length() != 1 {
-							t.Fail()
-						}
-					}),
+					bet.It("does not have some other key", hasOtherKey),
+					bet.It("has a length of 1", lengthIsNot1),
 				),
 			),
 		),
 	)
+}
+
+func hasOtherKey(t *testing.T, set Set) {
+	if set.Contains("greetings") {
+		t.Fail()
+	}
+}
+func lengthIsNot1(t *testing.T, set Set) {
+	if set.Length() != 1 {
+		t.Fail()
+	}
 }
