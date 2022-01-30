@@ -92,6 +92,7 @@ func hasOtherKey(t *testing.T, set Set) {
 		t.Fail()
 	}
 }
+
 func lengthIsNot1(t *testing.T, set Set) {
 	if set.Length() != 1 {
 		t.Fail()
