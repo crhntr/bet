@@ -27,6 +27,9 @@ func TestSet(t *testing.T) {
 			return make(Set)
 		},
 			bet.When("a value is added", func(t *testing.T, set Set) Set {
+				t.Cleanup(func() {
+					// do some clean up here.
+				})
 				set.Add("hello")
 				return set
 			},
