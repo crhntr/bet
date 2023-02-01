@@ -4,33 +4,24 @@ import (
 	"testing"
 )
 
-type Target[T any] struct {
+type InitialCondition[T any] struct {
 	d  string
 	fn func(t *testing.T)
 }
 
 type State[T any] struct {
 	d  string
-	fn func(t *testing.T, given func() T)
+	fn func(t *testing.T, given func(t *testing.T) T)
 }
 
-func Describe[T any](t *testing.T, name string, givens ...Target[T]) {
-	if name == "" {
-		for _, g := range givens {
-			t.Run(g.d, g.fn)
-		}
-		return
+func Describe[T any](t *testing.T, givens ...InitialCondition[T]) {
+	for _, g := range givens {
+		t.Run(g.d, g.fn)
 	}
-
-	t.Run("Describe "+name, func(t *testing.T) {
-		for _, g := range givens {
-			t.Run(g.d, g.fn)
-		}
-	})
 }
 
-func Given[T any](description string, given func() T, when ...State[T]) Target[T] {
-	return Target[T]{
+func Given[T any](description string, given func(t *testing.T) T, when ...State[T]) InitialCondition[T] {
+	return InitialCondition[T]{
 		d: "Given " + description,
 		fn: func(gt *testing.T) {
 			for _, w := range when {
@@ -42,15 +33,15 @@ func Given[T any](description string, given func() T, when ...State[T]) Target[T
 	}
 }
 
-func When[T any](description string, when func(t *testing.T, state T) T, then []Assertion[T]) State[T] {
+func When[T any](description string, when func(state T, t *testing.T) T, then []Assertion[T]) State[T] {
 	return State[T]{
 		d: description,
-		fn: func(t *testing.T, given func() T) {
+		fn: func(t *testing.T, given func(t *testing.T) T) {
 			for _, th := range then {
-				g := given()
-				w := when(t, g)
+				g := given(t)
+				w := when(g, t)
 				t.Run("Then it "+th.name, func(tt *testing.T) {
-					th.fn(tt, w)
+					th.fn(w, tt)
 				})
 			}
 		},
@@ -59,12 +50,12 @@ func When[T any](description string, when func(t *testing.T, state T) T, then []
 
 type Assertion[T any] struct {
 	name string
-	fn   func(t *testing.T, v T)
+	fn   func(v T, t *testing.T)
 }
 
 func Then[T any](assertions ...Assertion[T]) []Assertion[T] { return assertions }
 
-func It[T any](name string, fn func(t *testing.T, v T)) Assertion[T] {
+func It[T any](name string, fn func(v T, t *testing.T)) Assertion[T] {
 	return Assertion[T]{
 		name: name,
 		fn:   fn,
